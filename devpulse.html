@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DevPulse — Developer Productivity MVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/recharts@2.10.0/umd/Recharts.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0E0F11; color: #E8EAF0; font-family: 'DM Sans', system-ui, sans-serif; }
+  select { outline: none; appearance: none; -webkit-appearance: none; }
+  button { outline: none; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #16181C; } ::-webkit-scrollbar-thumb { background: #353840; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ── Data from workbook ────────────────────────────────────────────────────────
+const DEVELOPERS = [
+  { id:'DEV-001', name:'Ava Chen',    manager:'Rina Kapoor', managerId:'MGR-01', team:'Payments API',  service:'backend',  level:'SDE2' },
+  { id:'DEV-002', name:'Noah Patel',  manager:'Rina Kapoor', managerId:'MGR-01', team:'Payments API',  service:'backend',  level:'SDE1' },
+  { id:'DEV-006', name:'Ishan Mehta', manager:'Rina Kapoor', managerId:'MGR-01', team:'Payments API',  service:'backend',  level:'SDE3' },
+  { id:'DEV-003', name:'Mia Lopez',   manager:'Samir Gupta', managerId:'MGR-02', team:'Checkout Web',  service:'frontend', level:'SDE1' },
+  { id:'DEV-004', name:'Lucas Reed',  manager:'Samir Gupta', managerId:'MGR-02', team:'Checkout Web',  service:'frontend', level:'SDE2' },
+  { id:'DEV-008', name:'Zara Khan',   manager:'Samir Gupta', managerId:'MGR-02', team:'Checkout Web',  service:'frontend', level:'SDE1' },
+  { id:'DEV-005', name:'Emma Roy',    manager:'Priya Nair',  managerId:'MGR-03', team:'Mobile Growth', service:'mobile',   level:'SDE1' },
+  { id:'DEV-007', name:'Owen Brooks', manager:'Priya Nair',  managerId:'MGR-03', team:'Mobile Growth', service:'mobile',   level:'SDE2' },
+];
+
+const METRICS = [
+  { devId:'DEV-001', month:'2026-03', name:'Ava Chen',    team:'Payments API',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:3.95, avgLeadTime:2.40, bugRate:0,   pattern:'Healthy flow' },
+  { devId:'DEV-001', month:'2026-04', name:'Ava Chen',    team:'Payments API',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:3.90, avgLeadTime:3.35, bugRate:0,   pattern:'Healthy flow' },
+  { devId:'DEV-002', month:'2026-03', name:'Noah Patel',  team:'Payments API',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:5.90, avgLeadTime:4.30, bugRate:0,   pattern:'Healthy flow' },
+  { devId:'DEV-002', month:'2026-04', name:'Noah Patel',  team:'Payments API',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:1, avgCycleTime:5.40, avgLeadTime:3.75, bugRate:0.5, pattern:'Quality watch' },
+  { devId:'DEV-006', month:'2026-03', name:'Ishan Mehta', team:'Payments API',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:3.75, avgLeadTime:2.35, bugRate:0,   pattern:'Healthy flow' },
+  { devId:'DEV-006', month:'2026-04', name:'Ishan Mehta', team:'Payments API',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:1, avgCycleTime:3.70, avgLeadTime:2.35, bugRate:0.5, pattern:'Quality watch' },
+  { devId:'DEV-003', month:'2026-03', name:'Mia Lopez',   team:'Checkout Web',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:1, avgCycleTime:4.05, avgLeadTime:3.85, bugRate:0.5, pattern:'Quality watch' },
+  { devId:'DEV-003', month:'2026-04', name:'Mia Lopez',   team:'Checkout Web',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:3.05, avgLeadTime:3.55, bugRate:0,   pattern:'Healthy flow' },
+  { devId:'DEV-004', month:'2026-03', name:'Lucas Reed',  team:'Checkout Web',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:3.85, avgLeadTime:2.10, bugRate:0,   pattern:'Healthy flow' },
+  { devId:'DEV-004', month:'2026-04', name:'Lucas Reed',  team:'Checkout Web',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:3.55, avgLeadTime:2.90, bugRate:0,   pattern:'Healthy flow' },
+  { devId:'DEV-008', month:'2026-03', name:'Zara Khan',   team:'Checkout Web',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:3.80, avgLeadTime:3.15, bugRate:0,   pattern:'Healthy flow' },
+  { devId:'DEV-008', month:'2026-04', name:'Zara Khan',   team:'Checkout Web',  issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:1, avgCycleTime:3.85, avgLeadTime:3.40, bugRate:0.5, pattern:'Quality watch' },
+  { devId:'DEV-005', month:'2026-03', name:'Emma Roy',    team:'Mobile Growth', issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:1, avgCycleTime:5.95, avgLeadTime:4.95, bugRate:0.5, pattern:'Quality watch' },
+  { devId:'DEV-005', month:'2026-04', name:'Emma Roy',    team:'Mobile Growth', issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:6.50, avgLeadTime:4.70, bugRate:0,   pattern:'Needs review' },
+  { devId:'DEV-007', month:'2026-03', name:'Owen Brooks', team:'Mobile Growth', issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:1, avgCycleTime:4.55, avgLeadTime:4.30, bugRate:0.5, pattern:'Quality watch' },
+  { devId:'DEV-007', month:'2026-04', name:'Owen Brooks', team:'Mobile Growth', issuesDone:2, mergedPRs:2, prodDeploys:2, escapedBugs:0, avgCycleTime:4.80, avgLeadTime:3.65, bugRate:0,   pattern:'Healthy flow' },
+];
+
+const PRS = [
+  { id:'PR-001',devId:'DEV-001',month:'2026-03',reviewWaitHours:10.5,mergeTimeHours:34.5,linesChanged:209,reviewRounds:3 },
+  { id:'PR-002',devId:'DEV-001',month:'2026-03',reviewWaitHours:14.6,mergeTimeHours:27.6,linesChanged:468,reviewRounds:2 },
+  { id:'PR-003',devId:'DEV-001',month:'2026-04',reviewWaitHours:11.0,mergeTimeHours:31.0,linesChanged:247,reviewRounds:2 },
+  { id:'PR-004',devId:'DEV-001',month:'2026-04',reviewWaitHours:9.6, mergeTimeHours:18.6,linesChanged:509,reviewRounds:2 },
+  { id:'PR-005',devId:'DEV-002',month:'2026-03',reviewWaitHours:26.7,mergeTimeHours:45.7,linesChanged:287,reviewRounds:2 },
+  { id:'PR-006',devId:'DEV-002',month:'2026-03',reviewWaitHours:21.7,mergeTimeHours:40.7,linesChanged:337,reviewRounds:2 },
+  { id:'PR-007',devId:'DEV-002',month:'2026-04',reviewWaitHours:27.1,mergeTimeHours:43.1,linesChanged:344,reviewRounds:1 },
+  { id:'PR-008',devId:'DEV-002',month:'2026-04',reviewWaitHours:20.9,mergeTimeHours:37.9,linesChanged:776,reviewRounds:2 },
+  { id:'PR-009',devId:'DEV-006',month:'2026-03',reviewWaitHours:5.7, mergeTimeHours:21.7,linesChanged:425,reviewRounds:3 },
+  { id:'PR-010',devId:'DEV-006',month:'2026-03',reviewWaitHours:13.5,mergeTimeHours:25.5,linesChanged:179,reviewRounds:1 },
+  { id:'PR-011',devId:'DEV-006',month:'2026-04',reviewWaitHours:4.0, mergeTimeHours:15.0,linesChanged:660,reviewRounds:3 },
+  { id:'PR-012',devId:'DEV-006',month:'2026-04',reviewWaitHours:8.0, mergeTimeHours:22.0,linesChanged:687,reviewRounds:1 },
+  { id:'PR-013',devId:'DEV-003',month:'2026-03',reviewWaitHours:18.5,mergeTimeHours:42.5,linesChanged:536,reviewRounds:1 },
+  { id:'PR-014',devId:'DEV-003',month:'2026-03',reviewWaitHours:16.0,mergeTimeHours:32.0,linesChanged:579,reviewRounds:1 },
+  { id:'PR-015',devId:'DEV-003',month:'2026-04',reviewWaitHours:16.8,mergeTimeHours:36.8,linesChanged:290,reviewRounds:2 },
+  { id:'PR-016',devId:'DEV-003',month:'2026-04',reviewWaitHours:5.1, mergeTimeHours:30.1,linesChanged:618,reviewRounds:1 },
+  { id:'PR-017',devId:'DEV-004',month:'2026-03',reviewWaitHours:10.6,mergeTimeHours:24.6,linesChanged:310,reviewRounds:1 },
+  { id:'PR-018',devId:'DEV-004',month:'2026-03',reviewWaitHours:7.8, mergeTimeHours:19.8,linesChanged:441,reviewRounds:1 },
+  { id:'PR-019',devId:'DEV-004',month:'2026-04',reviewWaitHours:14.4,mergeTimeHours:30.4,linesChanged:638,reviewRounds:2 },
+  { id:'PR-020',devId:'DEV-004',month:'2026-04',reviewWaitHours:13.4,mergeTimeHours:29.4,linesChanged:257,reviewRounds:2 },
+  { id:'PR-021',devId:'DEV-008',month:'2026-03',reviewWaitHours:20.7,mergeTimeHours:36.7,linesChanged:172,reviewRounds:1 },
+  { id:'PR-022',devId:'DEV-008',month:'2026-03',reviewWaitHours:19.6,mergeTimeHours:37.6,linesChanged:678,reviewRounds:1 },
+  { id:'PR-023',devId:'DEV-008',month:'2026-04',reviewWaitHours:20.5,mergeTimeHours:38.5,linesChanged:225,reviewRounds:2 },
+  { id:'PR-024',devId:'DEV-008',month:'2026-04',reviewWaitHours:17.7,mergeTimeHours:38.7,linesChanged:374,reviewRounds:2 },
+  { id:'PR-025',devId:'DEV-005',month:'2026-03',reviewWaitHours:22.7,mergeTimeHours:36.7,linesChanged:191,reviewRounds:2 },
+  { id:'PR-026',devId:'DEV-005',month:'2026-03',reviewWaitHours:19.3,mergeTimeHours:40.3,linesChanged:566,reviewRounds:3 },
+  { id:'PR-027',devId:'DEV-005',month:'2026-04',reviewWaitHours:22.3,mergeTimeHours:34.3,linesChanged:458,reviewRounds:3 },
+  { id:'PR-028',devId:'DEV-005',month:'2026-04',reviewWaitHours:7.7, mergeTimeHours:24.7,linesChanged:750,reviewRounds:3 },
+  { id:'PR-029',devId:'DEV-007',month:'2026-03',reviewWaitHours:17.1,mergeTimeHours:33.1,linesChanged:604,reviewRounds:1 },
+  { id:'PR-030',devId:'DEV-007',month:'2026-03',reviewWaitHours:16.0,mergeTimeHours:37.0,linesChanged:194,reviewRounds:2 },
+  { id:'PR-031',devId:'DEV-007',month:'2026-04',reviewWaitHours:14.3,mergeTimeHours:28.3,linesChanged:300,reviewRounds:3 },
+  { id:'PR-032',devId:'DEV-007',month:'2026-04',reviewWaitHours:16.6,mergeTimeHours:30.6,linesChanged:580,reviewRounds:2 },
+];
+
+const BUGS = [
+  { id:'BUG-001',devId:'DEV-002',month:'2026-04',severity:'medium',status:'Open',   rootCause:'test gap',      linkedIssue:'JIRA-007' },
+  { id:'BUG-002',devId:'DEV-006',month:'2026-04',severity:'low',   status:'Open',   rootCause:'release config',linkedIssue:'JIRA-012' },
+  { id:'BUG-003',devId:'DEV-008',month:'2026-04',severity:'high',  status:'Open',   rootCause:'edge case',     linkedIssue:'JIRA-024' },
+  { id:'BUG-004',devId:'DEV-003',month:'2026-03',severity:'medium',status:'Closed', rootCause:'edge case',     linkedIssue:'JIRA-013' },
+  { id:'BUG-005',devId:'DEV-005',month:'2026-03',severity:'medium',status:'Closed', rootCause:'test gap',      linkedIssue:'JIRA-025' },
+  { id:'BUG-006',devId:'DEV-007',month:'2026-03',severity:'high',  status:'Closed', rootCause:'edge case',     linkedIssue:'JIRA-029' },
+];
+
+const MANAGER_SUMMARY = [
+  { managerId:'MGR-01', manager:'Rina Kapoor', month:'2026-03', teamSize:3, avgLeadTime:3.02, avgCycleTime:4.53, avgBugRate:0,    signal:'Healthy flow' },
+  { managerId:'MGR-01', manager:'Rina Kapoor', month:'2026-04', teamSize:3, avgLeadTime:3.15, avgCycleTime:4.33, avgBugRate:0.33, signal:'Watch bottlenecks' },
+  { managerId:'MGR-02', manager:'Samir Gupta', month:'2026-03', teamSize:3, avgLeadTime:3.03, avgCycleTime:3.90, avgBugRate:0.17, signal:'Watch bottlenecks' },
+  { managerId:'MGR-02', manager:'Samir Gupta', month:'2026-04', teamSize:3, avgLeadTime:3.28, avgCycleTime:3.48, avgBugRate:0.17, signal:'Watch bottlenecks' },
+  { managerId:'MGR-03', manager:'Priya Nair',  month:'2026-03', teamSize:2, avgLeadTime:4.63, avgCycleTime:5.25, avgBugRate:0.50, signal:'Watch bottlenecks' },
+  { managerId:'MGR-03', manager:'Priya Nair',  month:'2026-04', teamSize:2, avgLeadTime:4.18, avgCycleTime:5.65, avgBugRate:0,    signal:'Healthy flow' },
+];
+
+const MONTH_LABELS = { '2026-03': 'March 2026', '2026-04': 'April 2026' };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const getDevMetrics = (devId, month) => METRICS.find(m => m.devId === devId && m.month === month) || null;
+const getDevPRs = (devId, month) => PRS.filter(p => p.devId === devId && p.month === month);
+const getDevBugs = (devId, month) => BUGS.filter(b => b.devId === devId && b.month === month);
+const getDevHistory = (devId) => METRICS.filter(m => m.devId === devId).sort((a,b) => a.month.localeCompare(b.month));
+
+// ── Colors ────────────────────────────────────────────────────────────────────
+const C = {
+  bg:'#0E0F11', surface:'#16181C', border:'#252830', dim:'#353840',
+  muted:'#6B7280', text:'#E8EAF0', sub:'#9CA3AF',
+  accent:'#6EE7B7', warn:'#FCD34D', danger:'#F87171', info:'#93C5FD', purple:'#A78BFA',
+};
+const PATTERN_CFG = {
+  'Healthy flow':  { color: C.accent, icon: '✦' },
+  'Quality watch': { color: C.warn,   icon: '⚠' },
+  'Needs review':  { color: C.danger, icon: '↑' },
+};
+
+// ── Interpretation logic ──────────────────────────────────────────────────────
+function interpret(metrics, prs, bugs) {
+  const insights = [];
+  const avgReviewWait = prs.length ? prs.reduce((a,b) => a+b.reviewWaitHours,0)/prs.length : 0;
+  const avgLines = prs.length ? prs.reduce((a,b) => a+b.linesChanged,0)/prs.length : 0;
+  if (metrics.bugRate === 0 && metrics.avgLeadTime <= 3.5 && metrics.avgCycleTime <= 4.5)
+    insights.push({ type:'positive', text:'Zero escaped bugs combined with fast delivery — this is the ideal combination. Keep PR sizes manageable to sustain this.' });
+  else if (metrics.pattern === 'Healthy flow')
+    insights.push({ type:'positive', text:'Your delivery flow is healthy this month — work is moving from start to production without major blockages.' });
+  if (metrics.avgLeadTime > 4)
+    insights.push({ type:'warn', text:`Lead time of ${metrics.avgLeadTime.toFixed(1)} days means changes are taking a while to reach users after the PR is opened. There may be deployment queue or CI delays after merge.` });
+  if (metrics.avgCycleTime > 5)
+    insights.push({ type:'warn', text:`Cycle time of ${metrics.avgCycleTime.toFixed(1)} days suggests tickets stay in-progress longer than ideal. Breaking stories into smaller sub-tasks often helps.` });
+  if (avgReviewWait > 20)
+    insights.push({ type:'warn', text:`PRs are waiting ~${Math.round(avgReviewWait)}h for a first review. This delay happens before your code even starts moving through CI/CD — it's compressing your lead time headroom.` });
+  if (avgLines > 500)
+    insights.push({ type:'warn', text:`PRs average ${Math.round(avgLines)} lines changed. Large diffs slow reviewers and make bugs harder to spot. Aim to keep PRs under 400 lines.` });
+  if (metrics.bugRate > 0) {
+    const causes = [...new Set(bugs.map(b => b.rootCause))].join(', ');
+    insights.push({ type:'danger', text:`${metrics.escapedBugs} bug${metrics.escapedBugs>1?'s':''} escaped to production this month (root cause${bugs.length>1?'s':''}: ${causes}). Bug rate is ${metrics.bugRate} — investigate before it compounds.` });
+  }
+  return insights;
+}
+
+function getNextSteps(metrics, prs) {
+  const steps = [];
+  const avgReviewWait = prs.length ? prs.reduce((a,b) => a+b.reviewWaitHours,0)/prs.length : 0;
+  const avgLines = prs.length ? prs.reduce((a,b) => a+b.linesChanged,0)/prs.length : 0;
+  if (avgReviewWait > 20)
+    steps.push({ action:'Tag reviewers immediately after opening a PR', detail:`Your average review wait is ${Math.round(avgReviewWait)}h. Don't wait for reviewers to notice — a quick Slack ping when you open cuts this in half.` });
+  if (avgLines > 400)
+    steps.push({ action:'Split large PRs before submitting', detail:`Your PRs average ${Math.round(avgLines)} lines. Try splitting by logical concern: data layer, API, UI. Smaller PRs merge faster and get better feedback.` });
+  if (metrics.bugRate > 0)
+    steps.push({ action:'Add a pre-merge self-review step', detail:"Walk through your own diff with fresh eyes before tagging reviewers. Catching one edge case yourself avoids a production incident and builds reviewer trust." });
+  if (metrics.avgLeadTime > 4)
+    steps.push({ action:'Investigate what happens after merge', detail:`Lead time is ${metrics.avgLeadTime.toFixed(1)} days but cycle time is only ${metrics.avgCycleTime.toFixed(1)} days. The gap suggests post-merge delays — check CI queue times and deployment windows.` });
+  if (steps.length === 0) {
+    steps.push({ action:'Keep the momentum going', detail:"Your metrics are solid. The next step is helping teammates — your cycle time and quality numbers are worth sharing as a workflow example." });
+    steps.push({ action:'Document your testing approach', detail:"Zero escaped bugs this month is a quality signal. Write down the quick checks you do before merging — it builds team standards." });
+  }
+  return steps.slice(0, 3);
+}
+
+// ── React components ──────────────────────────────────────────────────────────
+const { useState } = React;
+const { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
+
+const Card = ({ children, style = {} }) =>
+  React.createElement('div', { style: { background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:'20px 24px', ...style } }, children);
+
+const MetricTile = ({ label, value, unit='', sub, color=C.text, explain }) =>
+  React.createElement('div', { style:{background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:'16px 18px'} },
+    React.createElement('div',{style:{fontSize:11,color:C.muted,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:6}},label),
+    React.createElement('div',{style:{fontSize:26,fontWeight:600,color,fontFamily:"'DM Mono',monospace",lineHeight:1}},
+      value,React.createElement('span',{style:{fontSize:13,color:C.muted,marginLeft:4}},unit)
+    ),
+    sub && React.createElement('div',{style:{fontSize:12,color:C.sub,marginTop:6}},sub),
+    explain && React.createElement('div',{style:{fontSize:11,color:C.muted,marginTop:8,lineHeight:1.5,borderTop:`1px solid ${C.border}`,paddingTop:8}},explain)
+  );
+
+const Badge = ({ text, color }) =>
+  React.createElement('span',{style:{display:'inline-flex',alignItems:'center',gap:5,padding:'3px 10px',borderRadius:20,background:color+'18',border:`1px solid ${color}40`,color,fontSize:12,fontWeight:500}},text);
+
+const SectionHeader = ({ title, sub }) =>
+  React.createElement('div',{style:{marginBottom:16}},
+    React.createElement('div',{style:{fontSize:13,fontWeight:600,color:C.text,letterSpacing:'0.02em'}},title),
+    sub && React.createElement('div',{style:{fontSize:12,color:C.muted,marginTop:3}},sub)
+  );
+
+// ── IC View ───────────────────────────────────────────────────────────────────
+function ICView() {
+  const [selectedDev, setSelectedDev] = useState('DEV-002');
+  const [selectedMonth, setSelectedMonth] = useState('2026-04');
+  const dev = DEVELOPERS.find(d => d.id === selectedDev);
+  const metrics = getDevMetrics(selectedDev, selectedMonth);
+  const prs = getDevPRs(selectedDev, selectedMonth);
+  const bugs = getDevBugs(selectedDev, selectedMonth);
+  const history = getDevHistory(selectedDev);
+  const pattern = metrics ? (PATTERN_CFG[metrics.pattern] || PATTERN_CFG['Healthy flow']) : null;
+  const insights = metrics ? interpret(metrics, prs, bugs) : [];
+  const steps = metrics ? getNextSteps(metrics, prs) : [];
+  const avgReviewWait = prs.length ? (prs.reduce((a,b)=>a+b.reviewWaitHours,0)/prs.length).toFixed(1) : '-';
+  const avgLines = prs.length ? Math.round(prs.reduce((a,b)=>a+b.linesChanged,0)/prs.length) : '-';
+  const trendData = history.map(h=>({ month:MONTH_LABELS[h.month]?.split(' ')[0]||h.month, leadTime:h.avgLeadTime, cycleTime:h.avgCycleTime }));
+
+  const e = React.createElement;
+
+  return e('div', null,
+    // Controls
+    e('div',{style:{display:'flex',gap:12,marginBottom:28,flexWrap:'wrap'}},
+      e('select',{value:selectedDev,onChange:ev=>setSelectedDev(ev.target.value),style:{background:C.surface,color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 14px',fontSize:14,cursor:'pointer'}},
+        DEVELOPERS.map(d=>e('option',{key:d.id,value:d.id},`${d.name} — ${d.team}`))
+      ),
+      e('select',{value:selectedMonth,onChange:ev=>setSelectedMonth(ev.target.value),style:{background:C.surface,color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 14px',fontSize:14,cursor:'pointer'}},
+        Object.entries(MONTH_LABELS).map(([k,v])=>e('option',{key:k,value:k},v))
+      )
+    ),
+    !metrics ? e(Card,null,e('div',{style:{color:C.muted,textAlign:'center',padding:'40px 0',fontSize:14}},'No data for this selection.')) :
+    e('div',null,
+      // Header card
+      e(Card,{style:{marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}},
+        e('div',{style:{display:'flex',alignItems:'center',gap:16}},
+          e('div',{style:{width:48,height:48,borderRadius:'50%',background:C.dim,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:600,color:C.accent}},
+            dev.name.split(' ').map(n=>n[0]).join('')
+          ),
+          e('div',null,
+            e('div',{style:{fontSize:18,fontWeight:600,color:C.text}},dev.name),
+            e('div',{style:{fontSize:13,color:C.sub}},`${dev.level} · ${dev.team} · ${dev.service}`)
+          )
+        ),
+        e('div',{style:{display:'flex',alignItems:'center',gap:12}},
+          e('span',{style:{fontSize:13,color:C.sub}},MONTH_LABELS[selectedMonth]),
+          pattern && e(Badge,{text:`${pattern.icon}  ${metrics.pattern}`,color:pattern.color})
+        )
+      ),
+      // 5 metric tiles
+      e('div',{style:{marginBottom:8}},e(SectionHeader,{title:'The 5 metrics this month',sub:'Calculated from Fact_Pull_Requests, Fact_Jira_Issues, Fact_CI_Deployments, Fact_Bug_Reports'})),
+      e('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:16}},
+        e(MetricTile,{label:'Lead time for changes',value:metrics.avgLeadTime.toFixed(1),unit:'days',sub:'PR open → prod deployment',color:metrics.avgLeadTime>4?C.warn:C.accent,explain:'Avg lead_time_days from successful prod deployments. Speed from PR open to user impact.'}),
+        e(MetricTile,{label:'Cycle time',value:metrics.avgCycleTime.toFixed(1),unit:'days',sub:'In Progress → Done',color:metrics.avgCycleTime>5.5?C.warn:C.accent,explain:'Avg cycle_time_days from Jira issues done this month. Shows how fast active work moves.'}),
+        e(MetricTile,{label:'PR throughput',value:metrics.mergedPRs,unit:'PRs',sub:'Merged this month',color:C.info,explain:'Count of merged pull requests. Useful as an activity signal — read with quality and speed metrics.'}),
+        e(MetricTile,{label:'Deployment freq.',value:metrics.prodDeploys,unit:'deploys',sub:'Successful prod releases',color:C.info,explain:'Count of successful prod deployments. More frequent safe releases = healthier delivery loop.'}),
+        e(MetricTile,{label:'Bug rate',value:metrics.bugRate.toFixed(1),unit:'',sub:`${metrics.escapedBugs} escaped / ${metrics.issuesDone} issues done`,color:metrics.bugRate>0?C.danger:C.accent,explain:'Escaped prod bugs ÷ issues completed. Shows whether delivery speed is hurting quality.'})
+      ),
+      // PR breakdown
+      e('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:24}},
+        e(MetricTile,{label:'Avg review wait',value:avgReviewWait,unit:'hrs',sub:'PR open → first reviewer',color:parseFloat(avgReviewWait)>20?C.warn:C.sub,explain:'How long code waits before a reviewer looks. A key hidden bottleneck in lead time.'}),
+        e(MetricTile,{label:'Avg PR size',value:avgLines,unit:'lines',sub:'Lines changed per PR',color:avgLines>500?C.warn:C.sub,explain:'Larger PRs slow reviewers and are correlated with more escaped bugs.'})
+      ),
+      // Trend
+      history.length > 1 && e(Card,{style:{marginBottom:24}},
+        e(SectionHeader,{title:'Trend: lead time vs cycle time',sub:'Month-over-month comparison'}),
+        e(ResponsiveContainer,{width:'100%',height:170},
+          e(LineChart,{data:trendData,margin:{top:4,right:8,bottom:0,left:-20}},
+            e(CartesianGrid,{stroke:C.border,strokeDasharray:'3 3'}),
+            e(XAxis,{dataKey:'month',tick:{fill:C.muted,fontSize:11}}),
+            e(YAxis,{tick:{fill:C.muted,fontSize:11},unit:'d'}),
+            e(Tooltip,{contentStyle:{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:12},formatter:(v,n)=>[`${v.toFixed(2)} days`,n==='leadTime'?'Lead time':'Cycle time']}),
+            e(Line,{type:'monotone',dataKey:'leadTime',stroke:C.accent,strokeWidth:2,dot:{fill:C.accent,r:4},name:'leadTime'}),
+            e(Line,{type:'monotone',dataKey:'cycleTime',stroke:C.purple,strokeWidth:2,dot:{fill:C.purple,r:4},name:'cycleTime'})
+          )
+        ),
+        e('div',{style:{display:'flex',gap:20,marginTop:12}},
+          e('span',{style:{display:'flex',alignItems:'center',gap:6,fontSize:12,color:C.muted}},e('span',{style:{width:12,height:3,borderRadius:2,background:C.accent,display:'inline-block'}}),' Lead time'),
+          e('span',{style:{display:'flex',alignItems:'center',gap:6,fontSize:12,color:C.muted}},e('span',{style:{width:12,height:3,borderRadius:2,background:C.purple,display:'inline-block'}}),' Cycle time')
+        )
+      ),
+      // Interpretation
+      e(Card,{style:{marginBottom:20}},
+        e(SectionHeader,{title:'What the data is telling you',sub:'Interpretation — not just numbers, but the story behind them'}),
+        e('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+          insights.map((ins,i)=>{
+            const color=ins.type==='positive'?C.accent:ins.type==='warn'?C.warn:C.danger;
+            const icon=ins.type==='positive'?'✓':ins.type==='warn'?'⚠':'✕';
+            return e('div',{key:i,style:{display:'flex',gap:12,padding:'12px 14px',background:color+'10',borderRadius:8,border:`1px solid ${color}25`}},
+              e('span',{style:{color,fontSize:14,marginTop:1,flexShrink:0}},icon),
+              e('span',{style:{fontSize:13,color:C.text,lineHeight:1.6}},ins.text)
+            );
+          })
+        )
+      ),
+      // Next steps
+      e(Card,{style:{marginBottom: bugs.length>0?20:0}},
+        e(SectionHeader,{title:'Suggested next steps',sub:'Practical actions based on your metrics — not generic advice'}),
+        e('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+          steps.map((step,i)=>
+            e('div',{key:i,style:{display:'flex',gap:14,paddingBottom:i<steps.length-1?12:0,borderBottom:i<steps.length-1?`1px solid ${C.border}`:'none'}},
+              e('div',{style:{width:24,height:24,borderRadius:'50%',background:C.dim,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:600,color:C.accent,flexShrink:0,marginTop:1}},i+1),
+              e('div',null,
+                e('div',{style:{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}},step.action),
+                e('div',{style:{fontSize:13,color:C.sub,lineHeight:1.6}},step.detail)
+              )
+            )
+          )
+        )
+      ),
+      // Bug details
+      bugs.length>0 && e(Card,null,
+        e(SectionHeader,{title:'Escaped bugs this month',sub:'Production bugs linked to your work — from Fact_Bug_Reports'}),
+        bugs.map(bug=>
+          e('div',{key:bug.id,style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:`1px solid ${C.border}`}},
+            e('div',{style:{fontSize:13,color:C.text}},`${bug.id} · ${bug.linkedIssue}`),
+            e('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},
+              e(Badge,{text:bug.severity,color:bug.severity==='high'?C.danger:bug.severity==='medium'?C.warn:C.muted}),
+              e(Badge,{text:bug.rootCause,color:C.info}),
+              e(Badge,{text:bug.status,color:bug.status==='Open'?C.danger:C.accent})
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+// ── Manager View ──────────────────────────────────────────────────────────────
+function ManagerView() {
+  const [selectedMonth, setSelectedMonth] = useState('2026-04');
+  const monthData = MANAGER_SUMMARY.filter(m => m.month === selectedMonth);
+  const barData = monthData.map(m => ({ manager:m.manager.split(' ')[0], leadTime:m.avgLeadTime, cycleTime:m.avgCycleTime, bugRate:m.avgBugRate }));
+  const e = React.createElement;
+  const signalCfg = { 'Healthy flow':{ color:C.accent,icon:'✦' }, 'Watch bottlenecks':{ color:C.warn,icon:'⚠' } };
+
+  return e('div', null,
+    e('div',{style:{display:'flex',gap:12,marginBottom:28}},
+      e('select',{value:selectedMonth,onChange:ev=>setSelectedMonth(ev.target.value),style:{background:C.surface,color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:'8px 14px',fontSize:14,cursor:'pointer'}},
+        Object.entries(MONTH_LABELS).map(([k,v])=>e('option',{key:k,value:k},v))
+      )
+    ),
+    e('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:16,marginBottom:28}},
+      monthData.map(m=>{
+        const sig = signalCfg[m.signal] || { color:C.warn, icon:'⚠' };
+        return e(Card,{key:m.managerId},
+          e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}},
+            e('div',null,
+              e('div',{style:{fontSize:15,fontWeight:600,color:C.text}},m.manager),
+              e('div',{style:{fontSize:12,color:C.muted,marginTop:2}},`Team size: ${m.teamSize} developers`)
+            ),
+            e(Badge,{text:`${sig.icon}  ${m.signal}`,color:sig.color})
+          ),
+          e('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}},
+            [
+              { label:'Lead time', val:`${m.avgLeadTime.toFixed(2)}d`, good:m.avgLeadTime<4 },
+              { label:'Cycle time', val:`${m.avgCycleTime.toFixed(2)}d`, good:m.avgCycleTime<5 },
+              { label:'Bug rate', val:`${(m.avgBugRate*100).toFixed(0)}%`, good:m.avgBugRate===0 },
+            ].map(stat=>
+              e('div',{key:stat.label,style:{textAlign:'center',background:C.bg,borderRadius:8,padding:'10px 6px'}},
+                e('div',{style:{fontSize:10,color:C.muted,letterSpacing:'0.06em',textTransform:'uppercase',marginBottom:4}},stat.label),
+                e('div',{style:{fontSize:18,fontWeight:600,color:stat.good?C.accent:C.warn,fontFamily:"'DM Mono',monospace"}},stat.val)
+              )
+            )
+          )
+        );
+      })
+    ),
+    e(Card,{style:{marginBottom:16}},
+      e(SectionHeader,{title:'Team comparison',sub:`Lead time vs cycle time — ${MONTH_LABELS[selectedMonth]}`}),
+      e(ResponsiveContainer,{width:'100%',height:200},
+        e(BarChart,{data:barData,margin:{top:4,right:8,bottom:0,left:-20}},
+          e(CartesianGrid,{stroke:C.border,strokeDasharray:'3 3',vertical:false}),
+          e(XAxis,{dataKey:'manager',tick:{fill:C.muted,fontSize:12}}),
+          e(YAxis,{tick:{fill:C.muted,fontSize:11},unit:'d'}),
+          e(Tooltip,{contentStyle:{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:12},formatter:(v,n)=>[`${v.toFixed(2)} days`,n==='leadTime'?'Avg lead time':'Avg cycle time']}),
+          e(Bar,{dataKey:'leadTime',fill:C.accent,radius:[4,4,0,0],name:'leadTime',barSize:24}),
+          e(Bar,{dataKey:'cycleTime',fill:C.purple,radius:[4,4,0,0],name:'cycleTime',barSize:24})
+        )
+      ),
+      e('div',{style:{display:'flex',gap:20,marginTop:12}},
+        e('span',{style:{display:'flex',alignItems:'center',gap:6,fontSize:12,color:C.muted}},e('span',{style:{width:12,height:12,borderRadius:3,background:C.accent,display:'inline-block'}}),' Lead time'),
+        e('span',{style:{display:'flex',alignItems:'center',gap:6,fontSize:12,color:C.muted}},e('span',{style:{width:12,height:12,borderRadius:3,background:C.purple,display:'inline-block'}}),' Cycle time')
+      )
+    ),
+    monthData.some(m=>m.managerId==='MGR-03'&&m.avgCycleTime>5) &&
+      e('div',{style:{padding:'14px 18px',borderRadius:10,background:C.warn+'10',border:`1px solid ${C.warn}30`,fontSize:13,color:C.text,lineHeight:1.6}},
+        e('span',{style:{color:C.warn,fontWeight:600}},'⚠ Attention — Mobile Growth: '),
+        `Cycle time is ${monthData.find(m=>m.managerId==='MGR-03').avgCycleTime.toFixed(1)} days — above the 5-day threshold. Check if tickets are scoped too large or if there are review delays compounding work-in-progress.`
+      )
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App() {
+  const [tab, setTab] = useState('ic');
+  const e = React.createElement;
+  return e('div',{style:{minHeight:'100vh',background:C.bg,fontFamily:"'DM Sans',system-ui,sans-serif",color:C.text}},
+    // Nav
+    e('div',{style:{borderBottom:`1px solid ${C.border}`,padding:'0 32px'}},
+      e('div',{style:{maxWidth:960,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',height:60}},
+        e('div',{style:{display:'flex',alignItems:'baseline',gap:8}},
+          e('span',{style:{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:600,color:C.accent,letterSpacing:'-0.02em'}},'DevPulse'),
+          e('span',{style:{fontSize:12,color:C.muted}},'Developer Productivity MVP')
+        ),
+        e('div',{style:{display:'flex',gap:4}},
+          [['ic','Individual View'],['manager','Manager View']].map(([id,label])=>
+            e('button',{key:id,onClick:()=>setTab(id),style:{padding:'6px 16px',borderRadius:8,border:'none',cursor:'pointer',fontSize:13,fontFamily:'inherit',background:tab===id?C.dim:'transparent',color:tab===id?C.text:C.muted,transition:'all 0.15s'}},label)
+          )
+        )
+      )
+    ),
+    // Content
+    e('div',{style:{maxWidth:960,margin:'0 auto',padding:'32px 32px 64px'}},
+      e('div',{style:{marginBottom:28}},
+        e('h1',{style:{fontFamily:"'Fraunces',serif",fontSize:28,fontWeight:300,color:C.text,margin:0,letterSpacing:'-0.02em'}},
+          tab==='ic'?'Your productivity snapshot':'Team health overview'
+        ),
+        e('p',{style:{fontSize:14,color:C.muted,marginTop:8}},
+          tab==='ic'?'Understand your 5 metrics, read the story behind them, and see concrete next steps.':'A high-level view of delivery health across all three engineering teams.'
+        )
+      ),
+      tab==='ic'?e(ICView,null):e(ManagerView,null)
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
